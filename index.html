@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keputusan Pembelian Marketplace : Analisa Tokopedia </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        #slide-container {
+            width: 100%;
+            max-width: 1280px; /* 16:9 aspect ratio container */
+            aspect-ratio: 16 / 9;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            border-radius: 1.5rem;
+            overflow: hidden;
+            background-color: #1e293b; /* Slate 800 */
+            position: relative;
+        }
+        .slide-content {
+            padding: 4rem;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .slide-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: #4ade80; /* Tokopedia-like Green */
+            margin-bottom: 1.5rem;
+        }
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 1rem 1.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.3s;
+            border: none;
+            outline: none;
+            border-radius: 0.5rem;
+        }
+        .nav-button:hover:not(:disabled) {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .nav-button:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+        #prev-slide { left: 1rem; }
+        #next-slide { right: 1rem; }
+        .data-table th, .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #334155;
+            text-align: left;
+        }
+        .data-table th {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .data-table {
+            width: 80%;
+            margin: 2rem 0;
+            border-collapse: collapse;
+        }
+        .highlight {
+            color: #fde047; /* Yellow for emphasis */
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="slide-container">
+        <div id="slide-display" class="slide-content">
+            <!-- Content will be injected here by JavaScript -->
+        </div>
+
+        <button id="prev-slide" class="nav-button" disabled onclick="navigateSlide(-1)">&#9664;</button>
+        <button id="next-slide" class="nav-button" onclick="navigateSlide(1)">&#9654;</button>
+
+        <div id="slide-number" class="absolute bottom-4 right-8 text-xl font-bold text-slate-400"></div>
+    </div>
+
+    <script>
+        let currentSlideIndex = 0;
+        const totalSlides = 10;
+        const slideDisplay = document.getElementById('slide-display');
+        const prevButton = document.getElementById('prev-slide');
+        const nextButton = document.getElementById('next-slide');
+        const slideNumberDisplay = document.getElementById('slide-number');
+
+        // --- SLIDE CONTENT ARRAY (Extracted from presentation_draft.md) ---
+        const slides = [
+            // SLIDE 1: JUDUL UTAMA & INFORMASI
+            {
+                title: 'PRESENTATION DRAFT',
+                content: `
+                    <h1 class="text-6xl font-extrabold text-[#4ade80] mb-6">Studi Kasus Marketplace</h1>
+                    <h2 class="text-4xl font-light mb-12">Peran Sistem Informasi dan Pemasaran Digital dalam Keputusan Pembelian di Tokopedia</h2>
+                    <div class="mt-8 text-2xl">
+                        <p class="font-semibold text-slate-300">Penulis:</p>
+                        <p>Dedy Tri Cahyono, Jaja Miharja, Mujito, & Andri Catur Trissetianto</p>
+                        <p class="text-lg italic mt-2">Institut Teknologi dan Bisnis Dewantara</p>
+                        <p class="mt-6 text-xl text-yellow-300">Seminar Nasional 2025 | 11 Oktober 2025</p>
+                    </div>
+                `
+            },
+            // SLIDE 2: KONTEKS & TANTANGAN (The Challenge)
+            {
+                title: 'Tokopedia: Tantangan di Tengah Lautan Merah E-commerce',
+                content: `
+                    <div class="grid grid-cols-2 gap-8 items-center mt-8">
+                        <div>
+                            <p class="text-2xl mb-4"><span class="highlight">1. Transformasi:</span> Pergeseran masif ke belanja <span class="italic">online</span>.</p>
+                            <p class="text-2xl mb-4"><span class="highlight">2. Tantangan:</span> Tokopedia, sebagai pelopor, kehilangan dominasi pasar.</p>
+                            <p class="text-2xl mb-4"><span class="highlight">3. Fokus Solusi:</span> Keberlanjutan ditentukan oleh **Sistem Informasi (SI)** dan **Pemasaran Digital (PD)**.</p>
+                        </div>
+                        <div class="bg-slate-700 p-6 rounded-xl shadow-lg">
+                            <h3 class="text-xl font-bold mb-3 text-red-400">Data Online Shop: Top Brand Index (TBI) Fase 2</h3>
+                            <ul class="space-y-2 text-2xl font-mono">
+                                <li class="text-green-400">Shopee: <span class="font-extrabold">50,50%</span></li>
+                                <li class="text-blue-400">Lazada: <span class="font-extrabold">13,30%</span></li>
+                                <li class="text-[#4ade80]">Tokopedia: <span class="font-extrabold">10,40%</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            // SLIDE 3: PERTANYAAN PENELITIAN & TUJUAN
+            {
+                title: 'Fokus Kinerja: SI, PD, dan Buying Decision',
+                content: `
+                    <h3 class="text-3xl font-bold text-yellow-300 mb-6 border-b border-yellow-300 pb-2">PERUMUSAN MASALAH</h3>
+                    <p class="text-4xl italic mb-12">Seberapa besar peran Sistem Informasi (X1) dan Pemasaran Digital (X2) dalam mendorong Keputusan Pembelian (Y) konsumen Tokopedia?</p>
+                    <h3 class="text-3xl font-bold text-cyan-400 mb-4 border-b border-cyan-400 pb-2">TUJUAN UTAMA</h3>
+                    <ul class="list-disc list-inside space-y-3 text-2xl ml-4">
+                        <li>Menguji pengaruh <span class="highlight">Parsial</span> (X1 -> Y; X2 -> Y).</li>
+                        <li>Menguji pengaruh <span class="highlight">Simultan</span> (X1 + X2 -> Y).</li>
+                        <li>Menemukan <span class="highlight">Variabel Dominan</span>.</li>
+                    </ul>
+                `
+            },
+            // SLIDE 4: MODEL & HIPOTESIS
+            {
+                title: 'Kerangka Konsep: Mencari Pengaruh Kritis',
+                content: `
+                    <div class="flex flex-col items-center space-y-6 mt-12">
+                        <div class="text-4xl font-extrabold text-cyan-300">Sistem Informasi (X1)</div>
+                        <div class="text-6xl text-slate-400">&darr; &nbsp; &darr;</div>
+                        <div class="text-5xl font-extrabold text-[#4ade80] py-3 px-8 bg-slate-700 rounded-lg">Keputusan Pembelian (Y)</div>
+                        <div class="text-6xl text-slate-400">&uarr; &nbsp; &uarr;</div>
+                        <div class="text-4xl font-extrabold text-cyan-300">Pemasaran Digital (X2)</div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-yellow-300 mt-10">HIPOTESIS</h3>
+                    <p class="text-xl mt-2">H₁: SI signifikan -> Y | H₂: PD signifikan -> Y | H₃: SI & PD **Simultan** signifikan -> Y</p>
+                `
+            },
+            // SLIDE 5: METODOLOGI (How We Tested)
+            {
+                title: 'Desain Kuantitatif & Sampling',
+                content: `
+                    <div class="grid grid-cols-3 gap-10 text-center mt-12">
+                        <div class="p-6 bg-slate-700 rounded-xl">
+                            <p class="text-5xl mb-4">&#9881;</p>
+                            <h3 class="text-2xl font-bold text-yellow-300">Pendekatan</h3>
+                            <p class="text-xl">Kuantitatif Kausalitas</p>
+                        </div>
+                        <div class="p-6 bg-slate-700 rounded-xl">
+                            <p class="text-5xl mb-4">&#128100;</p>
+                            <h3 class="text-2xl font-bold text-yellow-300">Sampel</h3>
+                            <p class="text-4xl font-extrabold text-[#4ade80]">100 Responden</p>
+                            <p class="text-xl">(Konsumen Tokopedia)</p>
+                        </div>
+                        <div class="p-6 bg-slate-700 rounded-xl">
+                            <p class="text-5xl mb-4">&#128200;</p>
+                            <h3 class="text-2xl font-bold text-yellow-300">Analisis</h3>
+                            <p class="text-xl">Regresi Linear Berganda (Uji t, F, R²)</p>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-cyan-400 mt-10">Teknik Sampling: Accidental Sampling</h3>
+                `
+            },
+            // SLIDE 6: HASIL: PERSAMAAN & DOMINASI VARIABEL
+            {
+                title: 'Hasil Regresi: Model Pengaruh',
+                content: `
+                    <div class="flex flex-col items-center">
+                        <h3 class="text-3xl font-bold text-yellow-300 mb-6">PERSAMAAN REGRESI</h3>
+                        <div class="text-5xl font-mono p-4 bg-slate-700 rounded-lg shadow-xl mb-10">
+                            Y = 1,414 + <span class="highlight text-yellow-300">0,644X₁</span> + 0,283X₂
+                        </div>
+                    </div>
+                    <table class="data-table mx-auto text-xl">
+                        <thead>
+                            <tr class="text-cyan-400"><th>Variabel</th><th>Koefisien (B)</th><th>Signifikansi</th><th>Keterangan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><span class="font-bold">Sistem Informasi (X₁)</span></td><td><span class="highlight text-3xl font-extrabold">0,644</span></td><td>0,000</td><td class="text-red-400 font-bold">Pengaruh Paling Kuat</td></tr>
+                            <tr><td>Pemasaran Digital (X₂)</td><td>0,283</td><td>0,000</td><td>Pengaruh Signifikan</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="text-3xl font-bold text-[#4ade80] mt-8 text-center">Kesimpulan: SI adalah variabel DOMINAN.</p>
+                `
+            },
+            // SLIDE 7: UJI t: PENGARUH PARSIAL
+            {
+                title: 'Uji t: Bukti Signifikansi Individual',
+                content: `
+                    <p class="text-xl mb-4 text-slate-400">Kriteria Uji: t_hitung > t_tabel (1,984) dan Sig. < 0,05</p>
+                    <table class="data-table mx-auto text-xl">
+                        <thead>
+                            <tr class="text-cyan-400"><th>Variabel</th><th>t_hitung</th><th>t_tabel</th><th>Nilai Sig.</th><th>Keputusan</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Sistem Informasi (X₁)</td><td><span class="highlight">8,206</span></td><td>> 1,984</td><td><span class="highlight">0,000</span></td><td class="text-[#4ade80] font-bold">H₁ Diterima</td></tr>
+                            <tr><td>Pemasaran Digital (X₂)</td><td><span class="highlight">4,086</span></td><td>> 1,984</td><td><span class="highlight">0,000</span></td><td class="text-[#4ade80] font-bold">H₂ Diterima</td></tr>
+                        </tbody>
+                    </table>
+                    <p class="text-3xl font-bold text-yellow-300 mt-8 text-center">Kedua variabel memiliki pengaruh yang NYATA terhadap Keputusan Pembelian.</p>
+                `
+            },
+            // SLIDE 8: UJI F & KOEFISIEN DETERMINASI
+            {
+                title: 'Kekuatan Model dan Kontribusi (Uji F & R²)',
+                content: `
+                    <div class="grid grid-cols-2 gap-12 mt-10">
+                        <div class="bg-slate-700 p-6 rounded-xl shadow-lg">
+                            <h3 class="text-3xl font-bold text-yellow-300 mb-4">1. PENGARUH SIMULTAN (Uji F)</h3>
+                            <ul class="list-disc list-inside space-y-3 text-2xl ml-4">
+                                <li>F_hitung: <span class="highlight">257,690</span></li>
+                                <li>Signifikansi: 0,000 (< 0,05)</li>
+                                <li class="text-[#4ade80] font-bold">Hasil: SI & PD secara bersama-sama berpengaruh SANGAT SIGNIFIKAN.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-700 p-6 rounded-xl shadow-lg flex flex-col justify-center items-center">
+                            <h3 class="text-3xl font-bold text-cyan-400 mb-4">2. KONTRIBUSI (Adjusted R²)</h3>
+                            <p class="text-8xl font-extrabold text-[#4ade80]">83.8%</p>
+                            <p class="text-2xl mt-4">Keputusan Pembelian dijelaskan oleh SI dan PD.</p>
+                            <p class="text-lg text-slate-400 mt-2">Sisanya (16,2%) dipengaruhi faktor lain (Harga, Kualitas Layanan).</p>
+                        </div>
+                    </div>
+                `
+            },
+            // SLIDE 9: KESIMPULAN UTAMA
+            {
+                title: 'Tiga Takeaway Penting (The Core Message)',
+                content: `
+                    <div class="grid grid-cols-3 gap-8 mt-12 text-center">
+                        <div class="p-6 bg-slate-700 rounded-xl shadow-lg border-b-4 border-cyan-400">
+                            <p class="text-5xl mb-4 text-cyan-400">&#10003;</p>
+                            <h3 class="text-2xl font-bold mb-2">VALIDITAS MODEL</h3>
+                            <p>SI dan PD terbukti signifikan secara parsial dan simultan.</p>
+                        </div>
+                        <div class="p-6 bg-slate-700 rounded-xl shadow-lg border-b-4 border-[#4ade80]">
+                            <p class="text-5xl mb-4 text-[#4ade80]">&#9881;</p>
+                            <h3 class="text-2xl font-bold mb-2">KUNCI LOYALITAS</h3>
+                            <p class="highlight text-xl">Kualitas Sistem Informasi adalah pendorong keputusan pembelian yang **PALING DOMINAN** (0,644).</p>
+                        </div>
+                        <div class="p-6 bg-slate-700 rounded-xl shadow-lg border-b-4 border-yellow-300">
+                            <p class="text-5xl mb-4 text-yellow-300">&#37;</p>
+                            <h3 class="text-2xl font-bold mb-2">EFEKTIVITAS MODEL</h3>
+                            <p>Kedua variabel menjelaskan Keputusan Pembelian sebesar **83,8%**.</p>
+                        </div>
+                    </div>
+                `
+            },
+            // SLIDE 10: REKOMENDASI & ARAH MASA DEPAN - UPDATED
+            {
+                title: 'Aksi Strategis Tokopedia & Arah Penelitian',
+                content: `
+                    <div class="grid grid-cols-2 gap-12 mt-10">
+                        <div>
+                            <h3 class="text-3xl font-bold text-yellow-300 mb-4">REKOMENDASI MANAJERIAL</h3>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-700 rounded-lg border-l-4 border-[#4ade80]">
+                                    <p class="font-bold text-xl text-[#4ade80]">PRIORITAS 1: SISTEM INFORMASI (SI) - FOKUS DOMINAN</p>
+                                    <ul class="list-disc list-inside space-y-1 text-base ml-4 mt-2">
+                                        <li><span class="font-semibold">Stabilitas & Kecepatan:</span> Memastikan waktu muat (load time) yang sangat cepat dan bebas *crash* atau *bug* (Zero Error).</li>
+                                        <li><span class="font-semibold">User Experience (UX):</span> Penyempurnaan antarmuka yang intuitif, mudah dinavigasi, dan responsif di semua perangkat (Desktop/Mobile).</li>
+                                        <li><span class="font-semibold">Fitur Real-Time:</span> Akurasi stok dan pelacakan pengiriman secara *real-time* untuk menumbuhkan kepercayaan mutlak.</li>
+                                        <li><span class="font-semibold">Keamanan Data:</span> Komitmen transparan terhadap perlindungan data pribadi dan transaksi konsumen.</li>
+                                    </ul>
+                                </div>
+                                <div class="p-4 bg-slate-700 rounded-lg border-l-4 border-cyan-400">
+                                    <p class="font-bold text-xl text-cyan-400">PRIORITAS 2: PEMASARAN DIGITAL (PD)</p>
+                                    <p class="text-base">Perkuat inovasi promosi agresif dan optimalisasi kolaborasi *influencer* untuk menanggapi gempuran kompetitor.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-3xl font-bold text-yellow-300 mb-4">SARAN PENELITIAN LANJUTAN</h3>
+                            <ul class="list-disc list-inside space-y-3 text-xl ml-4">
+                                <li>Eksplorasi dengan metode <span class="highlight">Wawancara Langsung</span> (*Mix Method*).</li>
+                                <li>Menambah variabel seperti <span class="highlight">Kualitas Pelayanan</span> atau <span class="highlight">Pengalaman Pelanggan</span>.</li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+        // --- END SLIDE CONTENT ARRAY ---
+
+        function renderSlide(index) {
+            if (index >= 0 && index < totalSlides) {
+                currentSlideIndex = index;
+                const slide = slides[index];
+                
+                // Clear existing content
+                slideDisplay.innerHTML = '';
+
+                // Set new content
+                const titleElement = document.createElement('h2');
+                titleElement.className = (index === 0) ? 'hidden' : 'slide-title text-4xl mb-10 border-b-2 border-slate-600 pb-2';
+                titleElement.innerHTML = slide.title;
+                if (index !== 0) {
+                   slideDisplay.appendChild(titleElement);
+                }
+                
+                const contentElement = document.createElement('div');
+                contentElement.className = (index === 0) ? 'flex h-full flex-col justify-center items-center' : 'flex-1';
+                contentElement.innerHTML = slide.content;
+                slideDisplay.appendChild(contentElement);
+                
+                // Update UI controls
+                updateNavigation();
+            }
+        }
+
+        function navigateSlide(direction) {
+            let newIndex = currentSlideIndex + direction;
+            renderSlide(newIndex);
+        }
+
+        function updateNavigation() {
+            prevButton.disabled = currentSlideIndex === 0;
+            nextButton.disabled = currentSlideIndex === totalSlides - 1;
+            slideNumberDisplay.textContent = `${currentSlideIndex + 1} / ${totalSlides}`;
+        }
+
+        // Initial render
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSlide(0);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                if (currentSlideIndex < totalSlides - 1) {
+                    navigateSlide(1);
+                }
+            } else if (e.key === 'ArrowLeft') {
+                if (currentSlideIndex > 0) {
+                    navigateSlide(-1);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
